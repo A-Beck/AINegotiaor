@@ -1,7 +1,7 @@
 from csv import DictReader
 from sys import argv, exit
 from itertools import islice
-from negotiator import Negotiator
+from adb2jb import Negotiator as adb2jb
 from random import seed, randint
 
 # read_scenario(parameterfile_name : String) --> (int, list(dict))
@@ -53,8 +53,8 @@ if __name__ == "__main__":
         exit(-42)
     score_a = score_b = 0
     # We will replace Negotiator here with <your id>_Negotiator, as specified in the Readme
-    negotiator_a = Negotiator()
-    negotiator_b = Negotiator()
+    negotiator_a = adb2jb()
+    negotiator_b = adb2jb()
     for scenario in argv[1:]:
         # Get the scenario parameters
         (num_iters, mapping) = read_scenario(scenario)
