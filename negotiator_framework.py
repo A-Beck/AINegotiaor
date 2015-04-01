@@ -1,8 +1,7 @@
 from csv import DictReader
 from sys import argv, exit
-from itertools import islice
 from adb2jb import Negotiator as adb2jb
-from random import seed, randint
+from random import randint
 
 # read_scenario(parameterfile_name : String) --> (int, list(dict))
     # Utility function to read in a single scenario from a csv file
@@ -21,11 +20,12 @@ def read_scenario(parameterfile_name):
                 list(DictReader(parameterfile, fieldnames=["item_name", "negotiator_a", "negotiator_b"]))
                 )
 
-# negotiate(num_iterations :  Int, negotiator_a : BaseNegotiator, negotiator_b : BaseNegotiator) --> (Boolean, list(String), Int)
-    # The main negotiation function, responsible for running a single scenario & coordinating interactions between the two
-    # negotiators.
+# negotiate(num_iterations:Int, negotiator_a:BaseNegotiator,negotiator_b:BaseNegotiator) -->(Boolean, list(String), Int)
+    # The main negotiation function, responsible for running a single scenario & coordinating interactions between the
+    # two negotiators.
 def negotiate(num_iterations, negotiator_a, negotiator_b):
-    # Get the initial offers from each negotiator - we pass in None to signify that no previous opposing offers have been made
+    # Get the initial offers from each negotiator,
+    # we pass in None to signify that no previous opposing offers have been made
     (offer_a, offer_b) = (negotiator_a.make_offer(None), negotiator_b.make_offer(None))
     # We scale the reported utility by a random factor
     a_scale = randint(1, 11)
@@ -39,12 +39,12 @@ def negotiate(num_iterations, negotiator_a, negotiator_b):
         negotiator_b.receive_utility(utility[0])
         # We signify agreement by both offers being structurally equal
         if offer_a == offer_b:
-            return (True, offer_a, i)
+            return True, offer_a, i
         # If we didn't agree, let each negotiator know what the other was offering, and get their counteroffer
         offer_a = negotiator_a.make_offer(offer_b)
         offer_b = negotiator_b.make_offer(offer_a)
     # If we failed overall, then there's no ordering to return
-    return (False, None, num_iterations)
+    return False, None, num_iterations
 
 if __name__ == "__main__":
     # We can't run without at least one scenario. We can, however, run with multiple provided scenarios
@@ -69,13 +69,15 @@ if __name__ == "__main__":
         negotiator_b.initialize(b_order, num_iters)
         # Get the result of the negotiation
         (result, order, count) = negotiate(num_iters, negotiator_a, negotiator_b)
-        # Assign points to each negotiator. Note that if the negotiation failed, each negotiatior receives a negative penalty
+        # Assign points to each negotiator. Note that if the negotiation failed,
+        #  each negotiatior receives a negative penalty
         # However, it is also possible in a "successful" negotiation for a given negotiator to receive negative points
         (points_a, points_b) = (negotiator_a.utility(), negotiator_b.utility()) if result else (-len(a_order), -len(b_order))
         results = (result, points_a, points_b, count)
         score_a += points_a
         score_b += points_b
-        # Update each negotiator with the final result, points assigned, and number of iterations taken to reach an agreement
+        # Update each negotiator with the final result, points assigned,
+        # and number of iterations taken to reach an agreement
         negotiator_a.receive_results(results)
         negotiator_b.receive_results(results)
         print("{} negotiation:\n\tNegotiator A: {}\n\tNegotiator B: {}".format("Successful" if result else "Failed", points_a, points_b))

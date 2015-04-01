@@ -10,15 +10,7 @@ class Negotiator(BaseNegotiator):
     # Override the make_offer method from BaseNegotiator to accept a given offer 5%
     # of the time, and return a random permutation the rest of the time.
 
-    def __init__(self):
-        super().__init__()
-        self.current_iter = 0
-        self.utility_history = {}
-
     def make_offer(self, offer):
-        if offer is not None:
-            self.offer = offer
-            offer_util = self.utility()
         self.current_iter += 1
         if random() < 0.05 and offer:
             # Very important - we save the offer we're going to return as self.offer
@@ -29,6 +21,3 @@ class Negotiator(BaseNegotiator):
             shuffle(ordering)
             self.offer = ordering[:]
             return self.offer
-
-    def receive_utility(self, utility):
-            self.utility_history[self.current_iter] = (utility, self.utility())
