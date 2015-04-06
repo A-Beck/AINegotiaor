@@ -22,12 +22,12 @@ class BaseNegotiator:
         # Note: Store a copy of whatever offer you make in self.offer at the end of this method.
     def make_offer(self, offer):
         pass
+
     # utility(self : BaseNegotiator) --> Float
         # Return the utility given by the last offer - Do not modify this method.
     def utility(self):
         total = len(self.preferences)
         util = reduce(lambda points, item: points + ((total / (self.offer.index(item) + 1)) - abs(self.offer.index(item) - self.preferences.index(item))), self.offer, 0)
-        pass
         return util
 
     # receive_utility(self : BaseNegotiator, utility : Float)

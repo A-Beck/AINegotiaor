@@ -1,5 +1,6 @@
 from negotiator_base import BaseNegotiator
 from random import random, shuffle
+from functools import reduce
 
 # Example negotiator implementation, which randomly chooses to accept
 # an offer or return with a randomized counteroffer.
@@ -17,8 +18,9 @@ class Negotiator(BaseNegotiator):
 
     def make_offer(self, offer):
         if offer is not None:
-            self.offer = offer
-            offer_util = self.utility()
+            offer_util = self.calc_utility(offer)
+            if self.current_iter > 0:
+                old_util = self.utility_history[self.self.current_iter][0]
         self.current_iter += 1
         if random() < 0.05 and offer:
             # Very important - we save the offer we're going to return as self.offer
@@ -31,4 +33,10 @@ class Negotiator(BaseNegotiator):
             return self.offer
 
     def receive_utility(self, utility):
-            self.utility_history[self.current_iter] = (utility, self.utility())
+        #                                         opponent | your utility
+        self.utility_history[self.current_iter] = (utility , self.utility())
+
+    def calc_utility(self, offer):
+        total = len(self.preferences)
+        util = reduce(lambda points, item: points + ((total / (offer.index(item) + 1)) - abs(offer.index(item) - self.preferences.index(item))), offer, 0)
+        return util
