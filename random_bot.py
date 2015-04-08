@@ -11,13 +11,12 @@ class Negotiator(BaseNegotiator):
     # of the time, and return a random permutation the rest of the time.
 
     def make_offer(self, offer):
-        self.current_iter += 1
         if random() < 0.05 and offer:
             # Very important - we save the offer we're going to return as self.offer
             self.offer = offer[:]
             return offer
         else:
-            ordering = self.preferences
+            ordering = self.preferences[:]
             shuffle(ordering)
             self.offer = ordering[:]
             return self.offer

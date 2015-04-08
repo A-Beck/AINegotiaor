@@ -18,11 +18,13 @@ class Negotiator(BaseNegotiator):
         self.round_number = 0
         self.utility_history = {}  # keeps track of past opponent utilities
         self.offer_history = {}  # keeps track of past opponent offers
+        self.result_history = {}
         self.past_offers = []  # keeps track of our past offers
         self.goes_last = True
 
     def make_offer(self, offer):
         #set up history data structure for current round
+        self.current_iter += 1
         if self.round_number not in self.utility_history.keys():
             self.utility_history[self.round_number] = {}
         if self.round_number not in self.offer_history.keys():
@@ -31,43 +33,40 @@ class Negotiator(BaseNegotiator):
             # Need to make a first offer to start negotiations, does not go last
             # This offer does not count towards the number of negotiations
             self.goes_last = False
-            offer = self.make_first_offer()
+            my_offer = self.make_first_offer()
             self.past_offers.append(offer)
         elif self.current_iter == self.iter_limit:
             # Last round - update variables, make a last offer
             self.offer_history[self.round_number][self.current_iter] = offer  # record current offer in history
             self.current_iter = 0
-            self.round_number += 1
-            offer = self.make_final_offer(offer)
+            my_offer = self.make_final_offer(offer)
         elif offer is not None:
             # In the middle of negotiations, make an offer
-            self.current_iter += 1
             self.offer_history[self.round_number][self.current_iter] = offer  # record current offer in history
-            offer = self.make_intermediate_offer(offer)
-            self.past_offers.append(offer)
-        return offer
+            my_offer = self.make_intermediate_offer(offer)
+        self.past_offers.append(my_offer)
+        self.offer = my_offer[:]
+        return self.offer[:]
 
     def make_first_offer(self):
         # print('first offer')
-        return self.preferences
+        return self.preferences[:]
 
     def make_intermediate_offer(self, offer):
-        # print('in middle of negotiations')
+        print('in middle of negotiations')
         if offer in self.past_offers:
-            self.past_offers = []  # this round of our negotiation is over, we can clear our offer history
-            return offer
+            return offer[:]
         else:
-            self.offer = self.one_up(offer)
-            return self.offer
+            my_offer = self.one_up(offer)
+            return my_offer
 
     def make_final_offer(self, offer):
-        # print('in final inter')
-        self.past_offers = []  # this round of our negotiation is over, we can clear our offer history
+        print('in final inter')
         if offer in self.past_offers:
             return offer
         else:
-            self.offer = self.one_up(offer)
-            return self.offer
+            my_offer = self.one_up(offer)
+            return my_offer
 
     def one_up(self, opponent_offer):
         if opponent_offer is None:
@@ -92,7 +91,12 @@ class Negotiator(BaseNegotiator):
         # recieves the utility from the previous negotiation and puts it into the right place in history
         round_hist = self.utility_history[self.round_number]
         round_hist[self.current_iter] = utility
-        pass
+
+    def receive_results(self, results):
+        # at the end of a negotiation, store the result of that negotiation
+        self.result_history[self.round_number] = results
+        self.round_number += 1  # this round is over, increment round number
+        self.past_offers = []  # this round of our negotiation is over, we can clear our offer history
 
     def calc_utility(self, offer):
         # This is the way florian said to do it in class on 4/7
