@@ -1,6 +1,5 @@
 from negotiator_base import BaseNegotiator
 from random import random, shuffle
-from functools import reduce
 
 # Example negotiator implementation, which randomly chooses to accept
 # an offer or return with a randomized counteroffer.
@@ -16,6 +15,7 @@ class Negotiator(BaseNegotiator):
         super().__init__()
         self.current_iter = 0  # the current iteration of negotiations in the round
         self.round_number = 0  # the current round
+        self.thresh = 2  # minimum utility we will accept
         # keeps track of past opponent utilities: dict(round_number : dict(iteration : utility))
         self.utility_history = {}
         # keeps track of past opponent offers: dict(round_number : dict(iteration : offer))
@@ -30,8 +30,6 @@ class Negotiator(BaseNegotiator):
     def make_offer(self, offer):
         #set up history data structure for current round, if needed
         self.current_iter += 1
-        if self.round_number not in self.utility_history.keys():
-            self.utility_history[self.round_number] = {}
         if self.round_number not in self.offer_history.keys():
             self.offer_history[self.round_number] = {}
         if offer is None:
@@ -47,18 +45,24 @@ class Negotiator(BaseNegotiator):
             # In the middle of negotiations, make an offer
             self.offer_history[self.round_number][self.current_iter] = offer  # record current offer in history
             my_offer = self.make_intermediate_offer(offer)
-        self.past_offers.append(my_offer) # keep track of our offer
+        self.past_offers.append(my_offer)  # keep track of our offer
         self.offer = my_offer[:]
         return self.offer[:]
 
     def make_first_offer(self):
-        # print('first offer')
+        #print('first offer')
         return self.preferences[:]
 
     def make_intermediate_offer(self, offer):
-        #print('in middle of negotiations')
+        print('in middle of negotiations')
+        if self.offer == [] or self.offer is None:
+            # if it is empty or none, initialize self.offer for one_up and random offer functions
+            self.offer = self.make_first_offer()
         if offer in self.past_offers:
             return offer[:]
+        elif random() < 0.05:
+            my_offer = self.random_offer()
+            return my_offer
         else:
             my_offer = self.one_up(offer)
             return my_offer
@@ -92,6 +96,8 @@ class Negotiator(BaseNegotiator):
 
     def receive_utility(self, utility):
         # receives opponents utility and stores it
+        if self.round_number not in self.utility_history.keys():
+            self.utility_history[self.round_number] = {}
         round_hist = self.utility_history[self.round_number]
         round_hist[self.current_iter] = utility
 
@@ -108,3 +114,12 @@ class Negotiator(BaseNegotiator):
         util = self.utility()
         self.offer = old_offer
         return util
+
+    def random_offer(self):
+        util = -1
+        rand_offer = self.offer[:]
+        while util < self.thresh:
+            shuffle(rand_offer)
+            util = self.calc_utility(rand_offer)
+        self.offer = rand_offer[:]
+        return self.offer
