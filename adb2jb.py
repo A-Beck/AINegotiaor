@@ -64,6 +64,8 @@ class Negotiator(BaseNegotiator):
             my_offer = self.random_offer()
             return my_offer
         else:
+            if self.is_too_late():
+                return offer
             my_offer = self.one_up(offer)
             return my_offer
 
@@ -123,3 +125,11 @@ class Negotiator(BaseNegotiator):
             util = self.calc_utility(rand_offer)
         self.offer = rand_offer[:]
         return self.offer
+
+
+    def is_too_late(self):
+        # If the number of iterations exceeds 8, meaning that 8 iterations have passed without an offer being accepted,
+        # accept the next offer, since the likelihood of losing more utility is high
+        if self.current_iter > 8:
+            return True
+        return False
