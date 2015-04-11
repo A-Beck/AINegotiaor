@@ -64,6 +64,8 @@ class Negotiator(BaseNegotiator):
             my_offer = self.random_offer()
             return my_offer
         else:
+            if self.is_our_utility_higher(offer):
+                return offer
             self.submit_prefs_if_final()
             if self.is_too_late():
                 return offer
@@ -139,3 +141,10 @@ class Negotiator(BaseNegotiator):
         # If we go last, and it is the last iteration of the round, submit our preferences list
         if self.goes_last and self.current_iter == 10:
             return self.preferences
+
+    def is_our_utility_higher(self, opponent_offer):
+        # If our utility is greater than the opponent's utility recieved in the last iteration, accept the offer
+        our_utility = self.calc_utility(opponent_offer)
+        their_utility = self.utility_history.get(self.round_number).get(self.current_iter - 1)
+        if our_utility > their_utility:
+            return True
