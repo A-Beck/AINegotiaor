@@ -9,13 +9,12 @@ class Negotiator(BaseNegotiator):
         self.opponent_utility = 0
 
     def make_offer(self, offer):
-        # Both offers are equal
-        if self.offer == []:
-            self.offer = self.preferences
+        if self.offer == [] or self.offer is None:
+            self.offer = self.preferences[:]
         if self.offer == offer:
             return offer
         else:
-            self.offer = self.one_up(offer)
+            self.offer = self.one_up(offer[:])
             return self.offer
 
     def one_up(self, opponent_offer):
